@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="/static//test_b.css" />
+    <title>Title</title>
+</head>
+<body>
+<div class="ColorChoosingBar">
+    <h2>Color Choosing Bar</h2>
+
+    <button onclick="setColorRed()">{{ param1 }}:</button>
+    <input type="color" id="color-picker-red" name="color-picker-red" value="#ff0000">
+
+    <button onclick="setColorGreen()">{{ param2 }}:</button>
+    <input type="color" id="color-picker-green" name="color-picker-green" value="#00ff00">
+
+    <button onclick="setColorBlue()">{{ param3 }}:</button>
+    <input type="color" id="color-picker-blue" name="color-picker-blue" value="#0000ff">
+</div>
+
+<div class="CanvasContainer">
+    <canvas id="drawingCanvas" width="275" height="550"></canvas>
+</div>
+
+<div class="Toolbar">
+    - Операции-<br>
+    <button onclick="clearCanvas()">Очистить Canvas</button>
+</div>
+
+<div class="Toolbar">
+        - Толщина -<br>
+        <img src="http://professorweb.ru/downloads/pen_thin.gif" alt="Тонкая кисть" onclick="changeThickness(1, this)">
+        <img src="http://professorweb.ru/downloads/pen_medium.gif" alt="Нормальная кисть" onclick="changeThickness(5, this)">
+        <img src="http://professorweb.ru/downloads/pen_thick.gif" alt="Толстая кисть" onclick="changeThickness(10, this)">
+</div>
+<script>
+    var canvas = document.getElementById("drawingCanvas");
+    var context = canvas.getContext("2d");
+
+    var backgroundImage = new Image();
+    backgroundImage.src = "/static/body.jpg";
+
+    backgroundImage.onload = function() {
+        context.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    };
+
+    var colorPickerRed = document.getElementById("color-picker-red");
+    var colorPickerGreen = document.getElementById("color-picker-green");
+    var colorPickerBlue = document.getElementById("color-picker-blue");
+
+    colorPickerRed.addEventListener("input", function() {
+        context.strokeStyle = colorPickerRed.value;
+    });
+
+    colorPickerGreen.addEventListener("input", function() {
+        context.strokeStyle = colorPickerGreen.value;
+    });
+
+    colorPickerBlue.addEventListener("input", function() {
+        context.strokeStyle = colorPickerBlue.value;
+    });
+
+    function setColorRed() {
+        context.strokeStyle = colorPickerRed.value;
+    }
+
+    function setColorGreen(color) {
+        context.strokeStyle = colorPickerGreen.value;
+    }
+
+    function setColorBlue(color) {
+        context.strokeStyle = colorPickerBlue.value;
+    }
+
+    canvas.onmousedown = startDrawing;
+    canvas.onmouseup = stopDrawing;
+    canvas.onmouseout = stopDrawing;
+    canvas.onmousemove = draw;
+
+    var previousThicknessElement;
+
+    function changeThickness(thickness, imgElement) {
+        context.lineWidth = thickness;
+        imgElement.className = "Selected";
+        if (previousThicknessElement !== null) {
+            previousThicknessElement.className = "";
+        }
+        previousThicknessElement = imgElement;
+    }
+
+    var isDrawing = false;
+
+    function startDrawing(e) {
+        isDrawing = true;
+        context.beginPath();
+        context.moveTo(e.pageX - canvas.offsetLeft, e.pageY - canvas.offsetTop);
+    }
+
+    function draw(e) {
+        if (isDrawing) {
+            var x = e.pageX - canvas.offsetLeft;
+            var y = e.pageY - canvas.offsetTop;
+            context.lineTo(x, y);
+            context.stroke();
+        }
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+    }
+
+    function clearCanvas() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        var backgroundImage = new Image();
+        backgroundImage.src = "/static/body.jpg";
+
+        backgroundImage.onload = function() {
+            context.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+        };
+    }
+
+</script>
+</body>
+</html>

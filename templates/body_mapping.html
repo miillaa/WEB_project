@@ -6,6 +6,7 @@
     <title>Title</title>
 </head>
 <body>
+
 <div class="ColorChoosingBar">
     <h2>Color Choosing Bar</h2>
 
@@ -26,6 +27,7 @@
 <div class="Toolbar">
     - Операции-<br>
     <button onclick="clearCanvas()">Очистить Canvas</button>
+    <button onclick="saveCanvas()">Сохранить:</button>
 </div>
 
 <div class="Toolbar">
@@ -119,6 +121,20 @@
             context.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
         };
     }
+
+    function saveCanvas() {
+    var canvas = document.getElementById('drawingCanvas');
+    var image = canvas.toDataURL();
+
+    fetch('/save_image', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ image: image })
+    })
+}
+
 
 </script>
 </body>

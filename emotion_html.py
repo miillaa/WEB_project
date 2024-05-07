@@ -17,12 +17,12 @@ def emotion_html():
                 </head>
                 <body>
                     <div>
-                        <form class="login_form" method="post">
+                        <form class="selection_form" method="post">
 
                             <div class="form-group">{'\n'.join(selection_buttons)}           
                             </div>
 
-                            <button type="submit" class="btn btn-primary">Записаться</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
                         </form>
                     </div>
                 </body>

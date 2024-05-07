@@ -1,6 +1,6 @@
 def emotion_html():
     with open('emotions.txt') as f:
-        emotions_list = f.readline().strip().split()
+        emotions_list = list(map(lambda x: x.strip(), f.readlines()))
     selection_buttons = []
     for i in range(len(emotions_list)):
         selection_buttons.append(f'''

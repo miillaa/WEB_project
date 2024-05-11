@@ -1,13 +1,13 @@
+from PIL import Image
+
 from emotion_html import emotion_html
 import base64
 from flask import Flask, render_template, request, redirect, abort
-from PIL import Image
 from data import db_session
 from data.users import User
 from data.news import News, NewsForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from forms.user import RegisterForm, LoginForm
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret_key'
@@ -30,6 +30,11 @@ def index():
     else:
         news = db_sess.query(News).filter(News.is_private != True)
     return render_template("index.html", news=news)
+
+
+@app.route("/home")
+def home():
+    return render_template("home.html")
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -76,61 +81,63 @@ def reqister():
 @login_required
 def add_news():
     form = NewsForm()
+    db_sess = db_session.create_session()
+    news_item = db_sess.query(News).filter_by(user_id=current_user.id).first()
+    with open('temp_image.png', 'rb') as image_file:
+        binary_data = image_file.read()
+        image = base64.b64encode(binary_data).decode('utf-8')
+    if news_item:
+        news_item.image = image
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
         news = News()
         news.title = form.title.data
         news.content = form.content.data
+        news.image = image
         news.is_private = form.is_private.data
         current_user.news.append(news)
         db_sess.merge(current_user)
         db_sess.commit()
         return redirect('/')
-    return render_template('news.html', title='Добавление новости',
-                           form=form)
+
+    db_sess.commit()
+    return render_template('news.html', title='Новости', form=form, news=news_item, image=image)
 
 
 @app.route('/news/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_news(id):
     form = NewsForm()
+
     if request.method == "GET":
         db_sess = db_session.create_session()
-        news = db_sess.query(News).filter(News.id == id,
-                                          News.user == current_user
-                                          ).first()
+        news = db_sess.query(News).filter(News.id == id, News.user == current_user).first()
         if news:
             form.title.data = news.title
             form.content.data = news.content
+            image = news.image
             form.is_private.data = news.is_private
         else:
             abort(404)
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        news = db_sess.query(News).filter(News.id == id,
-                                          News.user == current_user
-                                          ).first()
+        news = db_sess.query(News).filter(News.id == id, News.user == current_user).first()
         if news:
             news.title = form.title.data
             news.content = form.content.data
+            image = news.image
             news.is_private = form.is_private.data
             db_sess.commit()
             return redirect('/')
         else:
             abort(404)
-    return render_template('news.html',
-                           title='Редактирование новости',
-                           form=form
-                           )
+    return render_template('news.html', title='Новости', form=form, news=news, image=image)
 
 
 @app.route('/news_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
 def news_delete(id):
     db_sess = db_session.create_session()
-    news = db_sess.query(News).filter(News.id == id,
-                                      News.user == current_user
-                                      ).first()
+    news = db_sess.query(News).filter(News.id == id, News.user == current_user).first()
     if news:
         db_sess.delete(news)
         db_sess.commit()
@@ -143,10 +150,13 @@ def news_delete(id):
 @login_required
 def logout():
     logout_user()
+    img = Image.open('static/body.jpg')
+    img.save('temp_image.png')
     return redirect("/")
 
 
 @app.route('/save_image', methods=['POST'])
+@login_required
 def save_image():
     data = request.json
     if 'image' in data:
@@ -156,15 +166,11 @@ def save_image():
 
         with open('temp_image.png', 'wb') as f:
             f.write(image_bytes)
-
-        img = Image.open('temp_image.png')
-        img.show()
-        return 'Изображение получено и отображено'
-    else:
-        return 'Ошибка: Не удалось получить изображение'
+    return redirect('/news')
 
 
 @app.route('/body_mapping/<feeling1>,<feeling2>,<feeling3>')
+@login_required
 def body_mapping(feeling1, feeling2, feeling3):
     if request.method == 'GET':
         return render_template('body_mapping.html', param1=feeling1.capitalize(), param2=feeling2.capitalize(),
@@ -172,6 +178,7 @@ def body_mapping(feeling1, feeling2, feeling3):
 
 
 @app.route('/emotions', methods=['POST', 'GET'])
+@login_required
 def emotions():
     if request.method == 'GET':
         return emotion_html()

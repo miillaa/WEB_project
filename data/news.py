@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired
 
 
 class NewsForm(FlaskForm):
-    title = StringField('Заголовок', validators=[DataRequired()])
+    title = StringField("Заголовок", validators=[DataRequired()])
     content = TextAreaField("Содержание")
     is_private = BooleanField("Личное")
     submit = SubmitField('Применить')
@@ -23,6 +23,7 @@ class News(SqlAlchemyBase):
                            primary_key=True, autoincrement=True)
     title = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     content = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    image = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     created_date = sqlalchemy.Column(sqlalchemy.DateTime,
                                      default=datetime.datetime.now)
     is_private = sqlalchemy.Column(sqlalchemy.Boolean, default=True)

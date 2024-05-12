@@ -189,7 +189,7 @@ def emotions():
         if len(result) == 3:
             return redirect(f'/body_mapping/{result[0]},{result[1]},{result[2]}')
         else:
-            return "Choose 3 emotions"
+            return "Выберите 3 элемента"
 
 
 if __name__ == '__main__':
